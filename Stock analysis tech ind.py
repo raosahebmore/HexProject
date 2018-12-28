@@ -23,6 +23,7 @@ from pandas.tools.plotting import autocorrelation_plot
 from statsmodels.graphics.tsaplots import plot_acf
 from statsmodels.tsa.ar_model import AR
 from sklearn.metrics import mean_squared_error
+import seaborn as sns
 
 print("Below are the list of methods which we can do the stock analysis : ")
 print("      0: RSI Method  ")
@@ -35,9 +36,9 @@ print("      6: Rate of change (ROC)  ")
 print("      7: Williams R value  ")
 print("      8: Commodity Channel Index ")
 print("      9: Force Index")
-print("      10: Average Directional Movement Index")
-print("      11: Autoregression Time Series prediction of stock :")
-print("      12: Exit")
+#print("      10: Average Directional Movement Index")
+#print("      11: Autoregression Time Series prediction of stock :")
+print("      10: Exit")
 
 var =input("Enter the value(0,1,2,3,4,5...) which you want perform the analysis on the stock :")
 if(var =="12"):
@@ -78,8 +79,8 @@ def callme():
     print("      7: Williams R value  ")
     print("      8: Commodity Channel Index ")
     print("      9: Force Index")
-    print("      10: Autoregression Time Series prediction of stock :")
-    print("      11: Exit")
+ #   print("      10: Autoregression Time Series prediction of stock :")
+    print("      10: Exit")
     var =input("Enter the value(0,1,2,3,4,5...) which you want perform the analysis on the stock :")
  #    print("      11: Average Directional Movement Index")     
     if(var =="12"):
@@ -144,16 +145,17 @@ def callme():
            Forcei=Force_Index(ext_stock,1)
            print(Forcei)
            callme()
-        elif var =="10":
+        elif var=="10":
+            print("Thank You")
+        else:
+           print ("Select the aprroriate method type : ")
+"""        elif var =="10":
            print ("ADX")
            adx=AR_X(ext_stock)
            print(adx)
            callme()          
-           
-        elif var=="11":
-            print("Thank You")
-        else:
-           print ("Select the aprroriate method type : ")
+"""           
+
 
 """     elif var =="11":
            print ("ADX")
@@ -178,9 +180,11 @@ def ROC(df,n):
      df['ROC'] = pd.Series(N/D,name='Rate of Change')
      #df = df.join(ROC)
      df.plot(y=['Close'])
-     df.plot(y=['ROC'])
+     plt.xticks(rotation='vertical')
+     plt.show()
+     #df.plot(y=['ROC'])
      f1, ax11 = plt.subplots(figsize = (8,4))
-     ax11.plot(df.index,df['Close'], color = 'blue', lw=2, label='Close')
+     #ax11.plot(df.index,df['Close'], color = 'blue', lw=2, label='Close')
      ax11.plot(df.index,df['ROC'], color ='red', lw=1, label='ROC')
      ax11.set(title = 'Rate of Change', ylabel = 'Price',xlabel='Date')
      ax11.legend(loc='upper right')
@@ -285,17 +289,20 @@ def Moving_avg_con_div(df, n_fast, n_slow):
     ax1.plot(df.index, df['Close'], color = 'black', lw=2, label='Close')
     ax1.plot(df.index, EMAslow, color ='blue', lw=1, label='EMA(26)')
     ax1.plot(df.index, EMAfast, color ='red', lw=1, label='EMA(12)')
-    f2, ax2 = plt.subplots(figsize = (8,4))
-    ax2.plot(df.index, MACD, color='green', lw=1,label='MACD Line(26,12)')
-    ax2.plot(df.index, MACD, color='purple', lw=1, label='Signal Line(9)')
-    ax2.fill_between(df.index, MACD - MACDsign, color = 'gray', alpha=0.5, label='MACD Histogram')
     ax1.legend(loc='upper right')
     ax1.set(title = 'Stock Price', ylabel = 'Price',xlabel='Date')
+    plt.xticks(rotation='vertical')
+    plt.show()    
+    
+    f2, ax2 = plt.subplots(figsize = (8,4))
+    ax2.plot(df.index, MACD, color='red', lw=1,label='MACD Line(26,12)')
+    ax2.plot(df.index, MACDsign, color='purple', lw=1, label='Signal Line(9)')
     ax2.fill_between(df.index, MACD - MACDsign, color = 'gray', alpha=0.5, label='MACD Histogram')
+#    ax2.fill_between(df.index, MACD - MACDsign, color = 'gray', alpha=0.5, label='MACD Histogram')
     ax2.set(title = 'MACD(26,12,9)', ylabel='MACD')
     ax2.legend(loc = 'upper right')
     ax2.grid(False)
-
+    plt.xticks(rotation='vertical')
     plt.show()
     return df
     
@@ -307,12 +314,14 @@ def Moving_Avg_MAPE(df,n):
     :return: pandas.DataFrame
     """
     df["MA"] = pd.Series(df['Close'].rolling(n, min_periods=n).mean(), name='MA_' + str(n))
+    df["MA_7"] = pd.Series(df['Close'].rolling(n+7, min_periods=n+7).mean(), name='MA_' + str(n+7))    
     #df = df.join(MA)
     #df.plot(y=['Close'])
     #df.plot(y=['MA'])
     f1, ax12 = plt.subplots(figsize = (8,4))
     ax12.plot(df.index, df['Close'], color = 'black', lw=2, label='Close')
-    ax12.plot(df.index, df['MA'], color ='red', lw=1, label='MA')
+    ax12.plot(df.index, df['MA'], color ='red', lw=1, label='MA_14')
+    ax12.plot(df.index, df['MA_7'], color ='red', lw=1, label='MA_21')
     ax12.set(title = 'Moving Average ', ylabel = 'Price',xlabel='Date')
     ax12.legend(loc='upper right')
     plt.xticks(rotation='vertical')
@@ -328,16 +337,21 @@ def Bollinger_band(df,n):
     """
     MA = pd.Series(df['Close'].rolling(n, min_periods=n).mean())
     MSD = pd.Series(df['Close'].rolling(n, min_periods=n).std())
+    df['Mean'] = MA
+    df['B1'] = MA + (MSD * 2)
+    df['B2'] = MA - (MSD * 2)
+    """
     b1 = 4 * MSD / MA
-    B1 = pd.Series(b1, name='BollingerB_' + str(n))
-    df = df.join(B1)
-    b2 = (df['Close'] - MA + 2 * MSD) / (4 * MSD)
-    B2 = pd.Series(b2, name='Bollinger%b_' + str(n))
-    df = df.join(B2)
+    df['B1'] = pd.Series(b1, name='BollingerB_' + str(n))
+    #df = df.join(B1)
+    b2 = (df['Close'] - MA + (2 * MSD)) / (4 * MSD)
+    df['B2'] = pd.Series(b2, name='Bollinger%b_' + str(n))
+    #df = df.join(B2)
+    """
     f1, ax11 = plt.subplots(figsize = (8,4))
     ax11.plot(df.index, df['Close'], color = 'black', lw=2, label='Close')
-    ax11.plot(df.index, B1, color ='red', lw=1, label='High')
-    ax11.plot(df.index, B2, color ='red', lw=3, label='Low')
+    ax11.plot(df.index, df['B1'], color ='red', lw=1, label='High')
+    ax11.plot(df.index, df['B2'], color ='red', lw=3, label='Low')
     ax11.set(title = 'Bollinger Band  Method', ylabel = 'Price',xlabel='Date')
     ax11.legend(loc='upper right')
     plt.xticks(rotation='vertical')
@@ -350,8 +364,6 @@ def fast_stochastic(df, period=14, smoothing=3):
     %K = (Current Close - Lowest Low)/(Highest High - Lowest Low) * 100
     %D = 3-day SMA of %K
     """
-    k_fast=[]
-    d_fast=[]
     df1 = pd.DataFrame(df)
     low_min =  df1['Low'].rolling(period).min()
     high_max = df1['Low'].rolling(period).max()
@@ -378,8 +390,6 @@ def slow_stochastic(df, period=14, smoothing=3):
     %K = %D of fast stochastic
     %D = 3-day SMA of %K
     """
-    k_fast=[]
-    d_fast=[]
     df1 = pd.DataFrame(df)
     low_min =  df1['Low'].rolling(period).min()
     high_max = df1['Low'].rolling(period).max()
@@ -389,11 +399,11 @@ def slow_stochastic(df, period=14, smoothing=3):
     #print(df1)
     #df.plot(y=['Close'])
     #df.plot(y=['k_fast'])
-    f1, ax11 = plt.subplots(figsize = (8,4))
-    ax11.plot(df.index, df['Close'], color = 'black', lw=2, label='Close')
-    ax11.plot(df.index, df1['k_fast'], color ='red', lw=1, label='Slow Stochastic')
-    ax11.set(title = 'Slow stochastic calculation', ylabel = 'Price',xlabel='Date')
-    ax11.legend(loc='upper right')
+    f1, ax_ss = plt.subplots(figsize = (8,4))
+    ax_ss.plot(df.index, df['Close'], color = 'black', lw=2, label='Close')
+    ax_ss.plot(df.index, df1['k_fast'], color ='red', lw=1, label='Slow Stochastic')
+    ax_ss.set(title = 'Slow stochastic calculation', ylabel = 'Price',xlabel='Date')
+    ax_ss.legend(loc='upper right')
     plt.xticks(rotation='vertical')
     plt.show()
     return df1
@@ -637,7 +647,7 @@ elif var =="4":
    
 elif var =="5":
    print ("Slow Stochastic Method evaluation !")
-   ss=slow_stochastic(callme.ext_stock,14,3)
+   ss=slow_stochastic(ext_stock,14,3)
    print(ss)
    callme()
    
@@ -664,15 +674,17 @@ elif var =="9":
    Forcei=Force_Index(ext_stock,1)
    print(Forcei)
    callme()  
-elif var =="10":
+elif var=="10":
+    print("Thank You")
+else:
+   print ("Select the apropriate method type : ")
+   """
+   elif var =="10":
    print ("AR")
    adr=AR_X(ext_stock)
    print(adr)
    callme()
-elif var=="11":
-    print("Thank You")
-else:
-   print ("Select the apropriate method type : ")
+   """
 # Data for matplotlib finance plot
    #elif var =="10":
 #   print ("ADX")
